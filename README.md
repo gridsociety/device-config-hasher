@@ -22,8 +22,13 @@ The tool itself is device-agnostic: it reads whatever a **device profile**
 | Device | Profile | Covers | Vendor reference |
 |--------|---------|--------|------------------|
 | Ingeteam INGECON SUN STORAGE 3Power HV, C series (battery inverter) | `ingeteam-sun-storage-3power-c` v1 | 18 holding registers: operation and reactive-power control modes, P/Q settling times, watchdog timeout, voltage and frequency ramps, strategy bits, battery type and voltage/current limits, grid-forming droops and connection mode | Modbus TCP register map, document ABH2010IQM01, rev. 02 |
-| Jinko SCU, bank level (BMS string control unit) | `jinko-scu-bank` v1 | 4 input registers (float32): number of racks, cells, temperature sensors and packs | Jinko SCU Modbus protocol v1.5, "System Configuration" section |
-| Jinko SCU, rack level | `jinko-scu-rack` v1 | 1 input register (float32): insulation monitoring enabled | Jinko SCU Modbus protocol v1.5, rack section |
+| Jinko SCU, bank level (BMS string control unit) | `jinko-scu-bank` v2 | 4 input registers (float32): number of racks, cells, temperature sensors and packs | Jinko SCU Modbus protocol v1.5, "System Configuration" section |
+| Jinko SCU, rack level | `jinko-scu-rack` v2 | 1 input register (float32): insulation detection enabled state | Jinko SCU Modbus protocol v1.5, rack section |
+
+The Jinko profiles carry `address_offset: 2` (profile version 2, tool 1.1.0):
+on the SunTera G2 SCU the register documented at 1-based address A is served
+at PDU address A+1. Snapshots made with the v1 profiles read the word pair
+before each documented value and are not comparable with v2 snapshots.
 
 Every writable register that is deliberately *not* hashed (commands, dispatch
 setpoints, measurements, heartbeats, local/remote mode) is listed in the
@@ -84,7 +89,9 @@ dch profile list --profile-path ./profiles
 
 `--profile` accepts either a bundled profile name or a path to a YAML file;
 see [`examples/profile.example.yaml`](examples/profile.example.yaml) for the
-format. Every command accepts `--json` for machine-readable output.
+format. `protocol.address_offset` (default 0) is added to every converted
+PDU address, for firmware that serves its documented registers shifted by a
+constant number of words. Every command accepts `--json` for machine-readable output.
 
 ### Exit codes
 
@@ -98,7 +105,7 @@ format. Every command accepts `--json` for machine-readable output.
 ```json
 {
   "schema": "dch-snapshot/1",
-  "tool": { "name": "device-config-hasher", "version": "1.0.0", "source_sha256": "…" },
+  "tool": { "name": "device-config-hasher", "version": "1.1.0", "source_sha256": "…" },
   "algorithm": "sha256-jcs-v1",
   "plant": "arizzi",
   "captured_at": "2026-09-18T09:41:12Z",

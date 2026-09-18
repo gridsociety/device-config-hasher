@@ -1,6 +1,6 @@
 [project]
 name = "device-config-hasher"
-version = "1.0.0"
+version = "1.1.0"
 description = "Read-only, deterministic hashing of field-device configuration over Modbus TCP"
 readme = "README.md"
 license = { text = "MIT" }
