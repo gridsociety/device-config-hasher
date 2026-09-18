@@ -221,3 +221,45 @@ def profile_list(profile_paths: tuple[Path, ...], as_json: bool) -> None:
         click.echo(
             f"{p.name.ljust(width)}  v{p.version:<3} {len(p.parameters):>3} params  {p.title or ''}"
         )
+
+
+@main.command("source-hash")
+@click.argument("profiles", nargs=-1)
+@click.option(
+    "--profile-path",
+    "profile_paths",
+    multiple=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Extra directory searched for profiles by name (repeatable).",
+)
+@click.option("--json", "as_json", is_flag=True, help="Machine-readable report on stdout.")
+def source_hash(profiles: tuple[str, ...], profile_paths: tuple[Path, ...], as_json: bool) -> None:
+    """Print the hashes that bind a snapshot to this build: the tool's own
+    source hash and the hash of each profile.
+
+    Without arguments every bundled profile (plus those found under
+    --profile-path) is listed. PROFILES restricts the output to the given
+    profile names or YAML paths.
+    """
+    try:
+        if profiles:
+            selected = [find_profile(ref, extra_dirs=list(profile_paths)) for ref in profiles]
+        else:
+            selected = list_profiles(extra_dirs=list(profile_paths))
+    except ProfileError as exc:
+        _fail(str(exc), EXIT_CONFIG)
+        return
+    tool = {
+        "name": "device-config-hasher",
+        "version": __version__,
+        "source_sha256": tool_source_sha256(),
+    }
+    rows = [
+        {"name": p.name, "version": p.version, "sha256": p.sha256, "path": p.path} for p in selected
+    ]
+    if as_json:
+        click.echo(json.dumps({"tool": tool, "profiles": rows}, indent=2))
+        return
+    click.echo(f"tool     device-config-hasher {__version__}  {tool['source_sha256']}")
+    for r in rows:
+        click.echo(f"profile  {r['name']} v{r['version']}  {r['sha256']}")

@@ -87,6 +87,25 @@ List the available profiles (bundled and, optionally, from your own directory):
 dch profile list --profile-path ./profiles
 ```
 
+Print the hashes that bind a snapshot to this build, without a snapshot file:
+the tool's source hash and the hash of every bundled profile, or only of the
+profiles you name:
+
+```sh
+dch source-hash
+dch source-hash ingeteam-sun-storage-3power-c jinko-scu-bank --json
+```
+
+```
+tool     device-config-hasher 1.3.0  7a4f…
+profile  ingeteam-sun-storage-3power-c v2  5068…
+profile  jinko-scu-bank v2  874d…
+```
+
+To check a snapshot against the published code, check out the tag matching
+`tool.version`, install it and compare its `dch source-hash` output with the
+`tool.source_sha256` and `profile.sha256` values recorded in the file.
+
 `--profile` accepts either a bundled profile name or a path to a YAML file;
 see [`examples/profile.example.yaml`](examples/profile.example.yaml) for the
 format. `protocol.address_offset` (default 0) is added to every converted

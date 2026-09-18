@@ -231,3 +231,53 @@ def test_profile_list(profile_path: Path) -> None:
         "sha256": json.loads(result.output)[-1]["sha256"],
         "path": str(profile_path),
     }
+
+
+def test_source_hash(profile_path: Path) -> None:
+    from device_config_hasher import __version__
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["source-hash"])
+    assert result.exit_code == 0, result.output
+    assert tool_source_sha256() in result.output
+    assert "ingeteam-sun-storage-3power-c" in result.output
+    assert "jinko-scu-rack" in result.output
+
+    result = runner.invoke(
+        main,
+        [
+            "source-hash",
+            "--json",
+            "--profile-path",
+            str(profile_path.parent),
+            "sim-device",
+            "jinko-scu-bank",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.output)
+    assert report["tool"] == {
+        "name": "device-config-hasher",
+        "version": __version__,
+        "source_sha256": tool_source_sha256(),
+    }
+    assert [p["name"] for p in report["profiles"]] == ["sim-device", "jinko-scu-bank"]
+    sim = report["profiles"][0]
+    assert sim["version"] == 1 and sim["path"] == str(profile_path)
+    assert len(sim["sha256"]) == 64
+    listed = json.loads(
+        runner.invoke(
+            main, ["profile", "list", "--json", "--profile-path", str(profile_path.parent)]
+        ).output
+    )
+    assert sim["sha256"] == next(e["sha256"] for e in listed if e["name"] == "sim-device")
+
+    # A YAML path is accepted as a filter too.
+    result = runner.invoke(main, ["source-hash", "--json", str(profile_path)])
+    assert result.exit_code == 0, result.output
+    assert [p["name"] for p in json.loads(result.output)["profiles"]] == ["sim-device"]
+
+    # An unknown profile is a configuration error.
+    result = runner.invoke(main, ["source-hash", "no-such"])
+    assert result.exit_code == 3
+    assert "no-such" in result.output

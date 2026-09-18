@@ -99,6 +99,9 @@ Given only the snapshot file:
 4. Independently, compare `tool.source_sha256` with the source hash of the
    build you are running; a difference means the snapshot was produced by a
    different build, which is informational, not a failure.
+   `dch source-hash` (from 1.3.0) prints that value together with the profile
+   hashes, so a clean checkout of the tag named in `tool.version` can be
+   compared with the recorded values without taking a snapshot.
 
 `examples/verify_stdlib.py` implements these steps with the Python standard
 library only and is tested against the package.

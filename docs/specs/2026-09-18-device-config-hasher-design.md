@@ -506,6 +506,7 @@ dch snapshot --profile NAME_OR_PATH --host HOST [--port 502] [--unit-id 1]
              -o snapshot.json [--json]
 dch verify snapshot.json [--json]
 dch profile list [--profile-path DIR]... [--json]
+dch source-hash [PROFILE_NAME_OR_PATH]... [--profile-path DIR]... [--json]
 ```
 
 `--id` defaults to the profile name; `--plant` defaults to `"default"`.
@@ -517,6 +518,12 @@ recorded value. Exit 0 if everything matches, 1 on any mismatch, 3 if the
 file is not a valid snapshot. The report states whether the running build's
 source hash equals the recorded one; a difference is informational, not a
 failure.
+
+`dch source-hash` (added in 1.3.0) prints, without any snapshot, the
+running build's `tool.source_sha256` and the `sha256` of every bundled
+profile or of the profiles given as arguments, so that the values recorded
+in a snapshot can be checked against a clean checkout of the corresponding
+tag. Exit 0, or 3 if a named profile does not exist.
 
 | Command | Purpose | Exit codes |
 |---------|---------|------------|
