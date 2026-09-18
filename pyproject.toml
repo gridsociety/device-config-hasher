@@ -1,0 +1,53 @@
+[project]
+name = "device-config-hasher"
+version = "0.1.0"
+description = "Read-only, deterministic hashing of field-device configuration over Modbus TCP"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Grid Society" }]
+requires-python = ">=3.11"
+dependencies = [
+  "pymodbus>=3.15",
+  "pydantic>=2",
+  "PyYAML>=6",
+  "click>=8",
+]
+
+[project.scripts]
+dch = "device_config_hasher.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/device_config_hasher"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "types-PyYAML",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+mypy_path = "src"
+packages = ["device_config_hasher"]
+
+[[tool.mypy.overrides]]
+module = ["pymodbus.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
