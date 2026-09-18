@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.0 - 2026-09-18
+
+- New command `dch source-hash [PROFILE]...`: prints the hashes that bind a
+  snapshot to a build without needing a snapshot file: the tool's own source
+  hash (`tool.source_sha256`) and the hash of every bundled profile, or only
+  of the profiles named on the command line (names or YAML paths). `--json`
+  for machine-readable output, `--profile-path` for extra profile directories.
+  A third party can thus check the tool and profile hashes recorded in a
+  snapshot against a clean checkout of the corresponding tag.
+- Note: as with every release, the source hash changes. Snapshots taken with
+  1.3.0 carry a different `tool.source_sha256` and therefore different
+  `device_sha256`/`plant_sha256` values than 1.2.0 snapshots of the same
+  configuration; the raw words and profile hashes are unchanged.
+
 ## 1.2.0 - 2026-09-18
 
 - `ingeteam-sun-storage-3power-c` bumped to version 2: 42250 and 42252
