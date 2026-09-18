@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0 - 2026-09-18
+
+- `ingeteam-sun-storage-3power-c` bumped to version 2: 42250 and 42252
+  (grid-forming voltage and frequency droop) moved to `excluded`. The vendor
+  map marks both read-only (R, not R/W) and 42252 was observed changing
+  between reads (114, 98, 107 within 50 minutes), so they are values reported
+  by the inverter, not configuration. Snapshots made with v1 are not
+  comparable with v2 snapshots.
+
 ## 1.1.0 - 2026-09-18
 
 - Profiles gain an optional `protocol.address_offset` (default 0), added to
