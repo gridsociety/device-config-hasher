@@ -1,0 +1,52 @@
+# Example device profile. Copy, rename and edit; then:
+#   dch snapshot --profile ./my-device.yaml --host 10.0.0.10 -o snapshot.json
+schema: dch-profile/1
+name: example-device
+version: 1
+title: Example device
+vendor: Example Vendor
+documentation:
+  - "Vendor Modbus map, document XYZ rev. 1"
+
+protocol:
+  type: modbus_tcp
+  addressing: modicon          # pdu | one_based | modicon
+  word_order: big              # for 32-bit types: big = high word first
+  default_unit_id: 1
+
+parameters:
+  - name: watchdog_timeout
+    register: holding
+    address: 40101
+    type: u16
+    unit: ms
+    description: Communication watchdog timeout
+  - name: ramp_rate
+    register: holding
+    address: 40102
+    type: u16
+    scale: 0.1
+    unit: "%/s"
+  - name: control_mode
+    register: holding
+    address: 40103
+    type: u16
+    enum: { 0: "Local", 1: "Remote" }
+  - name: feature_enabled
+    register: holding
+    address: 40104
+    type: bit
+    bit: 3
+  - name: nominal_power
+    register: input
+    address: 30011
+    type: f32
+    unit: kW
+  - name: interlock_bypass
+    register: coil
+    address: 17
+    type: bit
+
+excluded:                      # documented, not read, not hashed
+  - { address: 40001, name: start_stop, reason: command }
+  - { address: 40050, name: power_setpoint, reason: dispatch setpoint }
