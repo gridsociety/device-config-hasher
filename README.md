@@ -98,7 +98,7 @@ format. Every command accepts `--json` for machine-readable output.
 ```json
 {
   "schema": "dch-snapshot/1",
-  "tool": { "name": "device-config-hasher", "version": "0.1.0", "source_sha256": "…" },
+  "tool": { "name": "device-config-hasher", "version": "1.0.0", "source_sha256": "…" },
   "algorithm": "sha256-jcs-v1",
   "plant": "arizzi",
   "captured_at": "2026-09-18T09:41:12Z",
