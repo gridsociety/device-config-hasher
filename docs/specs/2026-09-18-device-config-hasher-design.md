@@ -1,6 +1,6 @@
 # device-config-hasher — Design Specification
 
-**Status:** draft for review
+**Status:** draft for review (revised 2026-09-18: tool source hash §7.7, self-contained snapshot §8, v0.1 CLI scope §9)
 **Date:** 2026-09-18
 **Authors:** Grid Society
 
@@ -350,11 +350,15 @@ of the material: they affect display only.
     "version": <profile version>,
     "sha256": "<hex sha256 of the profile file bytes, LF-normalized>"
   },
+  "tool": {
+    "source_sha256": "<hex sha256 of the tool source, see §7.7>"
+  },
   "parameters": [ <parameter material>, ... ]
 }
 ```
 
-`parameters` is sorted by `(r, a)` with `r` compared as a string, and then by
+`tool.source_sha256` binds the hash to the exact software build that
+produced it (§7.7). `parameters` is sorted by `(r, a)` with `r` compared as a string, and then by
 `n` for the degenerate case of two parameters on the same word (different
 bits).
 
@@ -393,12 +397,36 @@ is not built, `device_sha256` is `null`, and `plant_sha256` is `null`. The
 snapshot is still written (with the partial readings and the error per
 parameter) so the operator can see what failed, and the CLI exits with code 2.
 
+### 7.7 Tool source hash
+
+The software itself is part of the hashed material, so that a hash also
+identifies the exact code that computed it. Because the tool is pure Python,
+the source hash is computed over the installed package sources:
+
+- the set of files is every `*.py` file below the `device_config_hasher`
+  package directory (recursively), and nothing else: no bundled profiles
+  (they are hashed per device, §7.2), no `__pycache__`, no tests, no docs,
+  no stray files such as `.DS_Store`. This is exactly the set of Python files
+  committed to git under `src/device_config_hasher/`;
+- files are sorted by their POSIX path relative to the package directory,
+  compared as UTF-8 byte strings;
+- for each file, in that order, the following bytes are fed to a single
+  SHA-256: the relative path as UTF-8, one `0x00` byte, the file content with
+  CRLF and CR line endings normalized to LF, one `0x00` byte;
+- `source_sha256` is the lowercase hex digest.
+
+The value is recorded in the snapshot as `tool.source_sha256` and enters the
+device material (§7.2). When verifying a snapshot offline, the verifier uses
+the `tool.source_sha256` **recorded in the snapshot** to rebuild the material,
+so that snapshots produced by earlier builds remain verifiable; it reports
+separately whether the running build is the same one that produced the file.
+
 ## 8. Snapshot document
 
 ```json
 {
   "schema": "dch-snapshot/1",
-  "tool": { "name": "device-config-hasher", "version": "0.1.0" },
+  "tool": { "name": "device-config-hasher", "version": "0.1.0", "source_sha256": "…" },
   "algorithm": "sha256-jcs-v1",
   "plant": "arizzi",
   "captured_at": "2026-09-18T09:41:12Z",
@@ -407,7 +435,8 @@ parameter) so the operator can see what failed, and the CLI exits with code 2.
   "devices": [
     {
       "id": "inverter",
-      "profile": { "name": "ingeteam-sun-storage-3power-c", "version": 1, "sha256": "…" },
+      "profile": { "name": "ingeteam-sun-storage-3power-c", "version": 1, "sha256": "…",
+                   "source": "schema: dch-profile/1\nname: ingeteam-sun-storage-3power-c\n…" },
       "connection": { "host": "10.10.100.10", "port": 502, "unit_id": 1 },
       "complete": true,
       "device_sha256": "…",
@@ -429,8 +458,17 @@ parameter) so the operator can see what failed, and the CLI exits with code 2.
 }
 ```
 
-- `captured_at`, `connection`, `decoded`, `unit`, `quality` and `tool` are
-  informational and outside the hashed material.
+- `captured_at`, `connection`, `decoded`, `unit`, `quality`, `tool.name` and
+  `tool.version` are informational and outside the hashed material.
+  `tool.source_sha256` is hashed (§7.7).
+- `profile.source` is the full, LF-normalized text of the profile file that
+  was used, so that the snapshot is self-contained: a verifier can check that
+  `sha256(profile.source) == profile.sha256` and an auditor can read the
+  parameter definitions (including the `excluded` table) without access to
+  the profile repository. The snapshot therefore carries everything needed
+  to re-verify it with no network and no other file: the raw words, the
+  profile, the tool source hash and the recorded hashes. This is what makes a
+  future web-based verifier possible with the file alone as input.
 - `decoded` is rendered by the tool's decoder; for `f32` it is written with
   Python `repr` (shortest round-trip). It is never re-hashed.
 - On a failed read, the parameter has `"raw": null`, `"quality": "error"` and
@@ -439,6 +477,32 @@ parameter) so the operator can see what failed, and the CLI exits with code 2.
 ## 9. Command-line interface
 
 Entry point: `dch`.
+
+**Scope of v0.1.** The first release ships only the commands needed to
+produce a self-contained snapshot of one device and to verify a snapshot
+file: `dch snapshot` with connection parameters given on the command line
+(no manifest), `dch verify FILE` (offline only) and `dch profile list`.
+Manifest support, live `verify`, `diff` and `profile show` are specified
+here for later releases; the snapshot format already accommodates them
+(`devices` is a list, `plant_sha256` is recorded).
+
+```
+dch snapshot --profile NAME_OR_PATH --host HOST [--port 502] [--unit-id 1]
+             [--id DEVICE_ID] [--plant PLANT] [--timeout 3.0] [--retries 2]
+             -o snapshot.json [--json]
+dch verify snapshot.json [--json]
+dch profile list [--profile-path DIR]... [--json]
+```
+
+`--id` defaults to the profile name; `--plant` defaults to `"default"`.
+`--profile` accepts a bundled profile name or a path to a YAML file.
+`dch verify FILE` recomputes the profile hash from `profile.source`, every
+`device_sha256` from the raw words and the recorded `tool.source_sha256`,
+and `plant_sha256` from the device hashes, then compares each with the
+recorded value. Exit 0 if everything matches, 1 on any mismatch, 3 if the
+file is not a valid snapshot. The report states whether the running build's
+source hash equals the recorded one; a difference is informational, not a
+failure.
 
 | Command | Purpose | Exit codes |
 |---------|---------|------------|
