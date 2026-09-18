@@ -1,0 +1,17 @@
+{
+  "material": {
+    "plant": "arizzi",
+    "devices": [
+      {
+        "id": "bms",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "id": "inverter",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  "canonical": "{\"devices\":[{\"id\":\"bms\",\"sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"},{\"id\":\"inverter\",\"sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\"}],\"plant\":\"arizzi\"}",
+  "sha256": "f84ddb2e36f7d5600e8dee04aed4b2de48714b1a00051398c0e5681c968b3431"
+}

@@ -1,0 +1,34 @@
+{
+  "material": {
+    "id": "inverter",
+    "profile": {
+      "name": "demo",
+      "version": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "tool": {
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "parameters": [
+      {
+        "n": "p1",
+        "r": "holding",
+        "a": 2203,
+        "w": [
+          30000
+        ]
+      },
+      {
+        "n": "p2",
+        "r": "input",
+        "a": 60,
+        "w": [
+          16256,
+          0
+        ]
+      }
+    ]
+  },
+  "canonical": "{\"id\":\"inverter\",\"parameters\":[{\"a\":2203,\"n\":\"p1\",\"r\":\"holding\",\"w\":[30000]},{\"a\":60,\"n\":\"p2\",\"r\":\"input\",\"w\":[16256,0]}],\"profile\":{\"name\":\"demo\",\"sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"version\":1},\"tool\":{\"source_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}}",
+  "sha256": "1452c65e5ef4c6cc2e40503fe5ed0f923906c34078a730ca36fd62a390ba1a33"
+}
