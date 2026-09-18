@@ -1,0 +1,42 @@
+schema: dch-profile/1
+name: jinko-scu-bank
+version: 1
+title: Jinko SCU (bank level) - system configuration
+vendor: Jinko
+documentation:
+  - "Jinko SCU Modbus protocol v1.5, section System Configuration"
+
+protocol:
+  type: modbus_tcp
+  addressing: one_based
+  word_order: big
+  default_unit_id: 1
+
+parameters:
+  - name: number_of_racks
+    register: input
+    address: 103
+    type: f32
+  - name: number_of_cells
+    register: input
+    address: 105
+    type: f32
+  - name: number_of_temperature_sensors
+    register: input
+    address: 107
+    type: f32
+  - name: number_of_packs
+    register: input
+    address: 109
+    type: f32
+
+excluded:
+  - { register: input, address: 97, name: local_remote_status, reason: "state changed by manual intervention, not configuration (spec §10)" }
+  - { register: input, address: 111, name: max_allowable_charge_current, reason: "recomputed continuously from SoC and temperature" }
+  - { register: input, address: 113, name: max_allowable_discharge_current, reason: "recomputed continuously from SoC and temperature" }
+  - { register: input, address: 115, name: max_allowable_charge_power, reason: "recomputed continuously from SoC and temperature" }
+  - { register: input, address: 117, name: max_allowable_discharge_power, reason: "recomputed continuously from SoC and temperature" }
+  - { register: input, address: 1, name: heartbeat, reason: "heartbeat" }
+  - { register: input, address: 3, name: rtc, reason: "clock" }
+  - { register: input, address: 119, name: energy_counters, reason: "counters" }
+  - { register: holding, address: 1, name: all_holding_registers, reason: "commands or reserved" }

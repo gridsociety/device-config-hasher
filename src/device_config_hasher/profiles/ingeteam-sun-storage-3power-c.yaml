@@ -1,0 +1,132 @@
+schema: dch-profile/1
+name: ingeteam-sun-storage-3power-c
+version: 1
+title: Ingeteam INGECON SUN STORAGE 3Power HV C Series
+vendor: Ingeteam
+documentation:
+  - "Modbus TCP register map, document ABH2010IQM01, rev. 02"
+
+protocol:
+  type: modbus_tcp
+  addressing: modicon
+  word_order: big
+  default_unit_id: 1
+
+# Types, scales and units below are conservative: every register is read as
+# a plain 16-bit word unless the vendor map states otherwise. Only the raw
+# words are hashed, so decoding details never affect the hash.
+parameters:
+  - name: operation_mode_request
+    register: holding
+    address: 42202
+    type: u16
+    description: Requested operation mode (grid-following / grid-forming)
+  - name: reactive_power_control_mode
+    register: holding
+    address: 42203
+    type: u16
+    description: Reactive power control mode (Q / cos phi / tan phi)
+  - name: active_power_increase_settling_time
+    register: holding
+    address: 42204
+    type: u16
+    scale: 0.001
+    unit: s
+    description: First-order filter settling time for active power increase
+  - name: active_power_decrease_settling_time
+    register: holding
+    address: 42205
+    type: u16
+    scale: 0.001
+    unit: s
+    description: First-order filter settling time for active power decrease
+  - name: reactive_power_increase_settling_time
+    register: holding
+    address: 42206
+    type: u16
+    scale: 0.001
+    unit: s
+    description: First-order filter settling time for reactive power increase
+  - name: reactive_power_decrease_settling_time
+    register: holding
+    address: 42207
+    type: u16
+    scale: 0.001
+    unit: s
+    description: First-order filter settling time for reactive power decrease
+  - name: communication_watchdog_timeout
+    register: holding
+    address: 42208
+    type: u16
+    unit: ms
+    description: Communication watchdog timeout
+  - name: voltage_ramp
+    register: holding
+    address: 42209
+    type: u16
+    description: Voltage ramp
+  - name: frequency_ramp
+    register: holding
+    address: 42210
+    type: u16
+    description: Frequency ramp
+  - name: strategy_mode_bits_1
+    register: holding
+    address: 42212
+    type: u16
+    description: Strategy mode bit field 1
+  - name: type_of_battery
+    register: holding
+    address: 42218
+    type: u16
+    enum: { 1: "No contactor (internal precharge)", 2: "With contactor" }
+  - name: maximum_battery_voltage
+    register: holding
+    address: 42219
+    type: u16
+    unit: V
+  - name: minimum_battery_voltage
+    register: holding
+    address: 42220
+    type: u16
+    unit: V
+  - name: maximum_battery_charge_current
+    register: holding
+    address: 42221
+    type: u16
+    unit: A
+  - name: maximum_battery_discharge_current
+    register: holding
+    address: 42222
+    type: u16
+    unit: A
+  - name: grid_forming_voltage_droop
+    register: holding
+    address: 42250
+    type: u16
+    description: Grid-forming voltage droop
+  - name: grid_forming_frequency_droop
+    register: holding
+    address: 42252
+    type: u16
+    description: Grid-forming frequency droop
+  - name: grid_forming_connection_mode
+    register: holding
+    address: 42253
+    type: u16
+    description: Grid-forming connection mode
+
+excluded:
+  - { address: 42201, name: start_stop_command, reason: "command" }
+  - { address: 42213, name: external_temperature_measure, reason: "time-dependent measurement written by the controller" }
+  - { address: 42217, name: idc_reference, reason: "setpoint" }
+  - { address: 42223, name: battery_contactor_command, reason: "command" }
+  - { address: 42231, name: grid_following_p_setpoint, reason: "dispatch setpoint" }
+  - { address: 42232, name: grid_following_q_setpoint, reason: "dispatch setpoint" }
+  - { address: 42233, name: grid_following_tan_phi_setpoint, reason: "dispatch setpoint" }
+  - { address: 42234, name: grid_following_cos_phi_setpoint, reason: "dispatch setpoint" }
+  - { address: 42235, name: grid_following_cos_phi_sign, reason: "dispatch setpoint" }
+  - { address: 42242, name: grid_following_vdc_setpoint, reason: "dispatch setpoint" }
+  - { address: 42249, name: grid_forming_voltage_setpoint, reason: "dispatch setpoint" }
+  - { address: 42251, name: grid_forming_frequency_setpoint, reason: "dispatch setpoint" }
+  - { address: 42261, name: grid_forming_idc_setpoint, reason: "dispatch setpoint" }

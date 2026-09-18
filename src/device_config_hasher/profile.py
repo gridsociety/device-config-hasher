@@ -83,6 +83,7 @@ class Profile(_Strict):
     # Filled by parse_profile, not by the YAML author.
     source: str = Field(default="", exclude=True)
     sha256: str = Field(default="", exclude=True)
+    path: str | None = Field(default=None, exclude=True)
 
     @model_validator(mode="after")
     def _validate(self) -> Profile:
@@ -181,9 +182,11 @@ def load_profile(path: Path) -> Profile:
     except UnicodeDecodeError as exc:
         raise ProfileError(f"profile {path} is not UTF-8: {exc}") from exc
     try:
-        return parse_profile(text)
+        profile = parse_profile(text)
     except ProfileError as exc:
         raise ProfileError(f"{path}: {exc}") from exc
+    profile.path = str(path)
+    return profile
 
 
 def bundled_profiles_dir() -> Path:

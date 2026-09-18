@@ -1,0 +1,23 @@
+schema: dch-profile/1
+name: jinko-scu-rack
+version: 1
+title: Jinko SCU (rack level) - configuration
+vendor: Jinko
+documentation:
+  - "Jinko SCU Modbus protocol v1.5, rack section"
+
+protocol:
+  type: modbus_tcp
+  addressing: one_based
+  word_order: big
+  default_unit_id: 1
+
+parameters:
+  - name: insulation_enabled
+    register: input
+    address: 61
+    type: f32
+
+excluded:
+  - { register: input, address: 163, name: cooling_unit_local_remote_status, reason: "state changed by manual intervention, not configuration (spec §10)" }
+  - { register: holding, address: 1, name: all_holding_registers, reason: "commands or reserved" }
