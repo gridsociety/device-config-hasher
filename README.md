@@ -14,6 +14,28 @@ The tool is **read-only** (only Modbus function codes 1 to 4 exist in the code),
 Design specification: [`docs/specs/2026-09-18-device-config-hasher-design.md`](docs/specs/2026-09-18-device-config-hasher-design.md).
 Hashing recipe: [`docs/hashing.md`](docs/hashing.md).
 
+## Supported devices
+
+The tool itself is device-agnostic: it reads whatever a **device profile**
+(a reviewable YAML file) tells it to read. These profiles ship with the tool:
+
+| Device | Profile | Covers | Vendor reference |
+|--------|---------|--------|------------------|
+| Ingeteam INGECON SUN STORAGE 3Power HV, C series (battery inverter) | `ingeteam-sun-storage-3power-c` v1 | 18 holding registers: operation and reactive-power control modes, P/Q settling times, watchdog timeout, voltage and frequency ramps, strategy bits, battery type and voltage/current limits, grid-forming droops and connection mode | Modbus TCP register map, document ABH2010IQM01, rev. 02 |
+| Jinko SCU, bank level (BMS string control unit) | `jinko-scu-bank` v1 | 4 input registers (float32): number of racks, cells, temperature sensors and packs | Jinko SCU Modbus protocol v1.5, "System Configuration" section |
+| Jinko SCU, rack level | `jinko-scu-rack` v1 | 1 input register (float32): insulation monitoring enabled | Jinko SCU Modbus protocol v1.5, rack section |
+
+Every writable register that is deliberately *not* hashed (commands, dispatch
+setpoints, measurements, heartbeats, local/remote mode) is listed in the
+profile under `excluded` with a one-line reason, so the decision is visible to
+an auditor. See [Bundled profiles](#bundled-profiles) for the change policy and
+[Guarantees and limits](#guarantees-and-limits) for what these devices do not
+expose over Modbus.
+
+Any other Modbus TCP device can be covered by writing a profile; start from
+[`examples/profile.example.yaml`](examples/profile.example.yaml) and pass it
+with `--profile ./my-device.yaml`.
+
 ## Install
 
 ```sh
@@ -140,14 +162,14 @@ python3 examples/verify_stdlib.py inverter-2026-09-18.json
 
 ## Bundled profiles
 
-| Name | Parameters | Notes |
-|------|-----------|-------|
-| `ingeteam-sun-storage-3power-c` | 18 holding registers | commands and dispatch setpoints listed under `excluded` |
-| `jinko-scu-bank` | 4 input f32 | the SCU "System Configuration" section |
-| `jinko-scu-rack` | 1 input f32 | insulation monitoring enable |
-
+The profiles listed under [Supported devices](#supported-devices) live in
+`src/device_config_hasher/profiles/` and are found by name with `--profile`.
 Any change to a bundled profile changes hashes for everyone using it, so the
-exact parameter set is pinned by a test and every change is an explicit diff.
+exact parameter set is pinned by a test (`tests/test_bundled_profiles.py`),
+every change is an explicit reviewed diff, and the profile `version` must be
+bumped. Profiles for other devices are welcome as pull requests, provided
+they follow the authoring rule in spec §5.4 and document every excluded
+writable register.
 
 ## License
 
