@@ -68,8 +68,13 @@ def test_ingeteam_profile() -> None:
 
 def test_jinko_bank_profile() -> None:
     p = find_profile("jinko-scu-bank")
-    assert p.version == 1
+    assert p.version == 2
     assert p.protocol.addressing == "one_based"
+    assert p.protocol.address_offset == 2
+    by_name = {x.name: x for x in p.parameters}
+    # Document address 103 is served at PDU 104 on the SunTera G2 SCU.
+    assert p.pdu_address(by_name["number_of_racks"]) == 104
+    assert p.pdu_address(by_name["number_of_packs"]) == 110
     assert _params(p.name) == {
         ("number_of_racks", "input", 103, "f32"),
         ("number_of_cells", "input", 105, "f32"),
@@ -81,9 +86,14 @@ def test_jinko_bank_profile() -> None:
 
 def test_jinko_rack_profile() -> None:
     p = find_profile("jinko-scu-rack")
-    assert p.version == 1
+    assert p.version == 2
+    assert p.protocol.address_offset == 2
     assert _params(p.name) == {("insulation_enabled", "input", 61, "f32")}
-    assert p.pdu_address(p.parameters[0]) == 60
+    assert p.pdu_address(p.parameters[0]) == 62
+
+
+def test_ingeteam_profile_has_no_offset() -> None:
+    assert find_profile("ingeteam-sun-storage-3power-c").protocol.address_offset == 0
 
 
 def test_bundled_profiles_have_unit_id_and_documentation() -> None:

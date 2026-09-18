@@ -13,6 +13,7 @@ protocol:
   addressing: modicon          # pdu | one_based | modicon
   word_order: big              # for 32-bit types: big = high word first
   default_unit_id: 1
+  address_offset: 0            # added to every converted PDU address (default 0)
 
 parameters:
   - name: watchdog_timeout

@@ -12,7 +12,7 @@ For each parameter of a device:
 |-----|-------|
 | `n` | parameter name, as written in the profile |
 | `r` | register type: `"holding"`, `"input"`, `"coil"` or `"discrete"` |
-| `a` | 0-based PDU address (integer), after converting from the profile's `addressing` |
+| `a` | 0-based PDU address (integer), after converting from the profile's `addressing` and adding its `address_offset` |
 | `w` | list of raw unsigned 16-bit words as returned by the device, in device order: 1 word for `u16`/`i16`/`bit`, 2 for `u32`/`i32`/`f32`. For `bit` on a register the **whole word** is used. For `coil`/`discrete`, `[0]` or `[1]`. |
 
 `scale`, `unit`, `enum`, `description` and `bit` are display-only and not part

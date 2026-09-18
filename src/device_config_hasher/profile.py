@@ -67,6 +67,10 @@ class Protocol(_Strict):
     addressing: Addressing
     word_order: Literal["big", "little"] = "big"
     default_unit_id: int = 1
+    #: Added to every converted PDU address. For firmware that serves its
+    #: documented registers shifted by a constant number of words; keeps the
+    #: vendor's addresses in the profile and makes the quirk explicit.
+    address_offset: int = 0
 
 
 class Profile(_Strict):
@@ -125,7 +129,11 @@ class Profile(_Strict):
         return self
 
     def pdu_address(self, p: Parameter) -> int:
-        """Convert the profile address of *p* to a 0-based PDU address."""
+        """Convert the profile address of *p* to a 0-based PDU address.
+
+        The address is first converted according to ``protocol.addressing``,
+        then ``protocol.address_offset`` is added.
+        """
         mode = self.protocol.addressing
         if mode == "pdu":
             pdu = p.address
@@ -139,6 +147,7 @@ class Profile(_Strict):
                     f"{p.register} range {lo}..{hi}"
                 )
             pdu = p.address - lo
+        pdu += self.protocol.address_offset
         if not 0 <= pdu <= 0xFFFF:
             raise ValueError(f"parameter {p.name!r}: address {p.address} is out of range")
         return pdu

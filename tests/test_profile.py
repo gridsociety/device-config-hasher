@@ -236,3 +236,52 @@ def test_list_profiles_includes_extra_dirs(tmp_path: Path) -> None:
     names = [p.name for p in list_profiles(extra_dirs=[tmp_path])]
     assert names[-1] == "demo-device"
     assert names == [*sorted(names[:-1]), "demo-device"]
+
+
+def _offset_profile(addressing: str, offset: int, register: str, address: int) -> str:
+    return f"""\
+schema: dch-profile/1
+name: offset-device
+version: 1
+protocol: {{type: modbus_tcp, addressing: {addressing}, address_offset: {offset}}}
+parameters:
+  - {{name: p, register: {register}, address: {address}, type: u16}}
+"""
+
+
+@pytest.mark.parametrize(
+    ("addressing", "offset", "register", "address", "expected"),
+    [
+        ("pdu", 0, "input", 103, 103),
+        ("pdu", 1, "input", 103, 104),
+        ("one_based", 2, "input", 103, 104),
+        ("one_based", 2, "input", 61, 62),
+        ("one_based", -1, "holding", 5, 3),
+        ("modicon", 1, "holding", 42208, 2208),
+    ],
+)
+def test_address_offset_is_added_after_conversion(
+    addressing: str, offset: int, register: str, address: int, expected: int
+) -> None:
+    p = parse_profile(_offset_profile(addressing, offset, register, address))
+    assert p.pdu_address(p.parameters[0]) == expected
+
+
+def test_address_offset_defaults_to_zero() -> None:
+    p = parse_profile(_single("one_based", "input", 103))
+    assert p.protocol.address_offset == 0
+    assert p.pdu_address(p.parameters[0]) == 102
+
+
+@pytest.mark.parametrize(
+    ("addressing", "offset", "register", "address"),
+    [
+        ("one_based", -1, "input", 1),
+        ("pdu", 1, "holding", 0xFFFF),
+    ],
+)
+def test_address_offset_out_of_range_is_rejected(
+    addressing: str, offset: int, register: str, address: int
+) -> None:
+    with pytest.raises(ProfileError, match="out of range"):
+        parse_profile(_offset_profile(addressing, offset, register, address))

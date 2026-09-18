@@ -1,14 +1,22 @@
 schema: dch-profile/1
 name: jinko-scu-bank
-version: 1
+version: 2
 title: Jinko SCU (bank level) - system configuration
 vendor: Jinko
 documentation:
   - "Jinko SCU Modbus protocol v1.5, section System Configuration"
 
+# Addresses below are the vendor's 1-based document addresses. On the
+# SunTera G2 SCU (Arizzi, 2026-09-18) every documented register is served
+# one word above its documented address, i.e. document address A is found at
+# PDU address A+1: one_based conversion (A-1) plus address_offset 2. Checked
+# against the topology values (12 racks, 4992 cells, 2688 sensors, 48 packs),
+# the local/remote status flag and the rack cell voltages; the v1 profiles
+# read the pair before each value and hashed the wrong words.
 protocol:
   type: modbus_tcp
   addressing: one_based
+  address_offset: 2
   word_order: big
   default_unit_id: 1
 

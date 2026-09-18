@@ -153,6 +153,10 @@ protocol:
                                #   modicon   = 30001/40001 style
   word_order: big              # for 32-bit types: big = high word first
   default_unit_id: 1
+  address_offset: 0            # optional, default 0: added to every converted
+                               # PDU address, for firmware that serves its
+                               # documented registers shifted by a constant
+                               # number of words (see the Jinko profiles)
 
 parameters:
   - name: active_power_increase_settling_time
@@ -191,7 +195,8 @@ Validation rules enforced at load time (loading fails on violation):
 - `schema` must be a supported value.
 - `name` matches `^[a-z0-9][a-z0-9-]*$`; parameter names match
   `^[a-z][a-z0-9_]*$` and are unique within the profile.
-- `address` is within the range implied by `addressing` and `register`.
+- `address` is within the range implied by `addressing` and `register`, and
+  the PDU address after adding `address_offset` is within 0..65535.
 - `type: bit` requires `bit` (0–15) on `holding`/`input`, and forbids it on
   `coil`/`discrete`.
 - No two parameters map to the same (register, address, bit) tuple.
@@ -257,8 +262,14 @@ P/Q/tanφ/cosφ/sign/Vdc setpoints (dispatch), 42249 and 42251 grid-forming
 voltage and frequency setpoints (dispatch), 42261 grid-forming Idc setpoint
 (dispatch).
 
-**`jinko-scu-bank` v1** — 4 input registers (float32), the section the Jinko
-SCU protocol v1.5 itself titles "System Configuration":
+**`jinko-scu-bank` v2** — 4 input registers (float32), the section the Jinko
+SCU protocol v1.5 itself titles "System Configuration". Addresses are the
+document's 1-based addresses with `address_offset: 2`: on the SunTera G2 SCU
+(Arizzi, 2026-09-18) document address A is served at PDU address A+1, as
+verified against the topology values, the local/remote flag and the rack
+cell voltages. v1 of both Jinko profiles lacked the offset and hashed the
+word pair preceding each documented value; the rack profile hashed the rack
+voltage.
 
 | Address (1-based) | Parameter |
 |-------------------|-----------|
@@ -272,7 +283,7 @@ max allowable charge/discharge current and power (recomputed continuously
 from SoC and temperature), heartbeat, RTC, energy counters, local/remote
 status (see §10).
 
-**`jinko-scu-rack` v1** — 1 input register (float32):
+**`jinko-scu-rack` v2** — 1 input register (float32), same `address_offset: 2`:
 
 | Address (1-based) | Parameter |
 |-------------------|-----------|

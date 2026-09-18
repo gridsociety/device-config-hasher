@@ -137,3 +137,28 @@ def test_client_has_no_write_path() -> None:
 def test_read_out_of_range_raises(simulator: Simulator) -> None:
     with _client(simulator, retries=0) as client, pytest.raises(ModbusReadError):
         client.read_words("holding", 60000, 2)
+
+
+OFFSET_PROFILE = """\
+schema: dch-profile/1
+name: offset-device
+version: 1
+protocol: {type: modbus_tcp, addressing: one_based, address_offset: 2}
+parameters:
+  - {name: racks, register: input, address: 103, type: f32}
+"""
+
+
+def test_address_offset_reaches_the_wire(simulator: Simulator) -> None:
+    """Document address 103 with offset 2 must read PDU words 104 and 105."""
+    simulator.input[102] = 0xDEAD
+    simulator.input[103] = 0xBEEF
+    simulator.input[104] = 0x4140  # 12.0 as float32, high word
+    simulator.input[105] = 0x0000
+    profile = parse_profile(OFFSET_PROFILE)
+    with _client(simulator) as client:
+        readings = read_device(profile, client)
+    (r,) = readings
+    assert r.pdu_address == 104
+    assert r.raw == [0x4140, 0x0000]
+    assert r.quality == "good"

@@ -1,14 +1,19 @@
 schema: dch-profile/1
 name: jinko-scu-rack
-version: 1
+version: 2
 title: Jinko SCU (rack level) - configuration
 vendor: Jinko
 documentation:
   - "Jinko SCU Modbus protocol v1.5, rack section"
 
+# Same firmware offset as jinko-scu-bank: document address A is served at
+# PDU address A+1 (one_based conversion plus address_offset 2). Without it
+# address 61 lands on the rack voltage, a measurement, and the hash changes
+# at every read.
 protocol:
   type: modbus_tcp
   addressing: one_based
+  address_offset: 2
   word_order: big
   default_unit_id: 1
 
@@ -17,6 +22,7 @@ parameters:
     register: input
     address: 61
     type: f32
+    description: Insulation detection enabled state
 
 excluded:
   - { register: input, address: 163, name: cooling_unit_local_remote_status, reason: "state changed by manual intervention, not configuration (spec §10)" }
