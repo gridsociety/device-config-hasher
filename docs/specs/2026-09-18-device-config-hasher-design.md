@@ -231,8 +231,12 @@ auditor can see the decision rather than infer it from absence.
 
 ### 5.5 Shipped profiles (initial)
 
-**`ingeteam-sun-storage-3power-c` v1** — 18 holding registers, plus one open
-decision (see §10):
+**`ingeteam-sun-storage-3power-c` v2** — 16 holding registers, plus one open
+decision (see §10). v1 also read 42250 and 42252 (grid-forming voltage and
+frequency droop); the vendor map marks both read-only (R, not R/W) and 42252
+was observed changing between reads (114, 98, 107 within 50 minutes at Arizzi
+on 2026-09-18), so they are reported values, not configuration, and are now
+excluded:
 
 | Address | Parameter |
 |---------|-----------|
@@ -251,16 +255,15 @@ decision (see §10):
 | 42220 | minimum_battery_voltage |
 | 42221 | maximum_battery_charge_current |
 | 42222 | maximum_battery_discharge_current |
-| 42250 | grid_forming_voltage_droop |
-| 42252 | grid_forming_frequency_droop |
 | 42253 | grid_forming_connection_mode |
 
 Excluded with reasons: 42201 start/stop (command), 42213 external
 temperature (time-dependent measurement), 42217 Idc reference (setpoint),
 42223 battery contactor (command), 42231–42235 and 42242 grid-following
 P/Q/tanφ/cosφ/sign/Vdc setpoints (dispatch), 42249 and 42251 grid-forming
-voltage and frequency setpoints (dispatch), 42261 grid-forming Idc setpoint
-(dispatch).
+voltage and frequency setpoints (dispatch), 42250 and 42252 grid-forming
+voltage and frequency droop (read-only, reported by the inverter), 42261
+grid-forming Idc setpoint (dispatch).
 
 **`jinko-scu-bank` v2** — 4 input registers (float32), the section the Jinko
 SCU protocol v1.5 itself titles "System Configuration". Addresses are the

@@ -24,8 +24,6 @@ INGETEAM = {
     ("minimum_battery_voltage", "holding", 42220, "u16"),
     ("maximum_battery_charge_current", "holding", 42221, "u16"),
     ("maximum_battery_discharge_current", "holding", 42222, "u16"),
-    ("grid_forming_voltage_droop", "holding", 42250, "u16"),
-    ("grid_forming_frequency_droop", "holding", 42252, "u16"),
     ("grid_forming_connection_mode", "holding", 42253, "u16"),
 }
 INGETEAM_EXCLUDED = {
@@ -40,7 +38,9 @@ INGETEAM_EXCLUDED = {
     42235,
     42242,
     42249,
+    42250,
     42251,
+    42252,
     42261,
 }
 
@@ -59,7 +59,8 @@ def test_bundled_directory_lists_exactly_three_profiles() -> None:
 
 def test_ingeteam_profile() -> None:
     p = find_profile("ingeteam-sun-storage-3power-c")
-    assert p.version == 1
+    assert p.version == 2
+    assert len(p.parameters) == 16
     assert p.protocol.addressing == "modicon"
     assert _params(p.name) == INGETEAM
     assert {e.address for e in p.excluded} == INGETEAM_EXCLUDED
